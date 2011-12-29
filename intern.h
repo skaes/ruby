@@ -274,6 +274,12 @@ void rb_gc_before_fork _((void));
 void rb_gc_after_fork _((void));
 VALUE rb_gc_allocated_size _((void));
 VALUE rb_gc_num_allocations _((void));
+unsigned long rb_os_live_objects _((void));
+#ifdef HAVE_LONG_LONG
+unsigned LONG_LONG rb_os_allocated_objects _((void));
+#else
+unsigned long rb_os_allocated_objects _((void));
+#endif
 /* hash.c */
 void st_foreach_safe _((struct st_table *, int (*)(ANYARGS), unsigned long));
 void rb_hash_foreach _((VALUE, int (*)(ANYARGS), VALUE));
