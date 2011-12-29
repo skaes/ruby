@@ -1330,6 +1330,8 @@ rb_f_fork(obj)
     fflush(stderr);
 #endif
 
+    rb_gc_before_fork();
+
     before_exec();
     pid = fork();
     after_exec();
@@ -1339,6 +1341,7 @@ rb_f_fork(obj)
 #ifdef linux
 	after_exec();
 #endif
+        rb_gc_after_fork();
 	rb_thread_atfork();
 	if (rb_block_given_p()) {
 	    int status;
@@ -1574,10 +1577,12 @@ rb_f_system(argc, argv)
 
     chfunc = signal(SIGCHLD, SIG_DFL);
   retry:
+    rb_gc_before_fork();
     before_exec();
     pid = fork();
     if (pid == 0) {
 	/* child process */
+        rb_gc_after_fork();
 	rb_thread_atfork();
 	rb_protect(proc_exec_args, (VALUE)&earg, NULL);
 	_exit(127);
