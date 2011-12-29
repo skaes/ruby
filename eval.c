@@ -1325,8 +1325,8 @@ error_print()
         int truncate = eclass == rb_eSysStackError;
 
 #define TRACE_MAX (TRACE_HEAD+TRACE_TAIL+5)
-#define TRACE_HEAD 8
-#define TRACE_TAIL 5
+#define TRACE_HEAD 100
+#define TRACE_TAIL 100
 
 	ep = RARRAY(errat);
 	for (i=1; i<ep->len; i++) {
