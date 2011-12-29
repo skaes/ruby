@@ -690,6 +690,7 @@ static int heaps_used   = 0;
 
 static int heap_min_slots = 10000;
 static int heap_slots = 10000;
+static int heap_size = 0;
 
 static int heap_free_min = 4096;
 static int heap_slots_increment = 10000;
@@ -796,6 +797,21 @@ static void set_gc_parameters()
             initial_malloc_limit = malloc_limit_i;
         }
     }
+}
+
+/*
+ *  call-seq:
+ *     GC.heap_slots    => Integer
+ *
+ *  Returns the number of heap slots available for object allocations.
+ *
+ *     GC.heap_slots    #=> 10000
+ *
+ */
+VALUE
+rb_gc_heap_slots()
+{
+    return INT2NUM(heap_size);
 }
 
 /*
@@ -967,6 +983,7 @@ add_heap()
         heaps[heaps_used].limit = heap_slots;
         break;
     }
+    heap_size += heap_slots;
     pend = p + heap_slots;
     if (lomem == 0 || lomem > p) lomem = p;
     if (himem < pend) himem = pend;
@@ -1828,6 +1845,7 @@ gc_sweep()
 	if (n == heaps[i].limit && freed > free_min) {
 	    RVALUE *pp;
 
+            heap_size -= n;
 	    heaps[i].limit = 0;
 	    for (pp = final_list; pp != final; pp = pp->as.free.next) {
 		pp->as.free.flags |= FL_SINGLETON; /* freeing page mark */
@@ -2866,6 +2884,7 @@ Init_GC()
     rb_define_singleton_method(rb_mGC, "clear_stats", rb_gc_clear_stats, 0);
     rb_define_singleton_method(rb_mGC, "allocated_size", rb_gc_allocated_size, 0);
     rb_define_singleton_method(rb_mGC, "num_allocations", rb_gc_num_allocations, 0);
+    rb_define_singleton_method(rb_mGC, "heap_slots", rb_gc_heap_slots, 0);
     rb_define_singleton_method(rb_mGC, "collections", rb_gc_collections, 0);
     rb_define_singleton_method(rb_mGC, "time", rb_gc_time, 0);
     rb_define_singleton_method(rb_mGC, "dump", rb_gc_dump, 0);
