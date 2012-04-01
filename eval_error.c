@@ -166,8 +166,8 @@ error_print(void)
         int skip = eclass == rb_eSysStackError;
 
 #define TRACE_MAX (TRACE_HEAD+TRACE_TAIL+5)
-#define TRACE_HEAD 8
-#define TRACE_TAIL 5
+#define TRACE_HEAD 100
+#define TRACE_TAIL 100
 
 	for (i = 1; i < len; i++) {
 	    if (TYPE(ptr[i]) == T_STRING) {
