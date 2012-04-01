@@ -1193,6 +1193,34 @@ rb_gc_log_file(int argc, VALUE *argv, VALUE self)
 }
 
 /*
+ * Called from process.c before a fork. Flushes the gc log file to
+ * avoid writing the buffered output twice (once in the parent, and
+ * once in the child).
+ */
+void
+rb_gc_before_fork()
+{
+    rb_objspace_t *objspace = &rb_objspace;
+    fflush(gc_data_file);
+}
+
+/*
+ * Called from process.c after a fork in the child process. Turns off
+ * logging, disables GC stats and resets all gc counters and timing
+ * information.
+ */
+void
+rb_gc_after_fork()
+{
+    rb_objspace_t *objspace = &rb_objspace;
+    rb_gc_disable_stats();
+    rb_gc_clear_stats();
+    rb_gc_disable_trace();
+    gc_data_file = stderr;
+    rb_iv_set(rb_mGC, GC_LOGFILE_IVAR, Qnil);
+}
+
+/*
  *  call-seq:
  *     GC.log String  => String
  *
