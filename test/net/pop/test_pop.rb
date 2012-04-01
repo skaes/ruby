@@ -3,10 +3,14 @@ require 'test/unit'
 require 'digest/md5'
 
 class TestPOP < Test::Unit::TestCase
+  def localhost
+    '127.0.0.1'
+  end
+
   def setup
     @users = {'user' => 'pass' }
     @ok_user = 'user'
-    @stamp_base = "#{$$}.#{Time.now.to_i}@localhost"
+    @stamp_base = "#{$$}.#{Time.now.to_i}@#{localhost}"
   end
 
   def test_pop_auth_ok
@@ -64,7 +68,7 @@ class TestPOP < Test::Unit::TestCase
   end
 
   def pop_test(apop=false)
-    host = 'localhost'
+    host = localhost
     server = TCPServer.new(host, 0)
     port = server.addr[1]
     thread = Thread.start do

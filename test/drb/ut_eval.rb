@@ -3,7 +3,7 @@ require 'drb/extserv'
 
 class EvalAttack
   def initialize
-    @four = DRb::DRbServer.new('druby://localhost:0', self, {:safe_level => 4})
+    @four = DRb::DRbServer.new('druby://127.0.0.1:0', self, {:safe_level => 4})
   end
 
   def four
@@ -25,7 +25,7 @@ if __FILE__ == $0
 
   $SAFE = 1
 
-  DRb.start_service('druby://localhost:0', EvalAttack.new, {:safe_level => 2})
+  DRb.start_service('druby://127.0.0.1:0', EvalAttack.new, {:safe_level => 2})
   es = DRb::ExtServ.new(ARGV.shift, ARGV.shift)
   DRb.thread.join
 end

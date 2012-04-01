@@ -154,7 +154,7 @@ if __FILE__ == $0
 
   DRb::DRbServer.default_argc_limit(8)
   DRb::DRbServer.default_load_limit(4096)
-  DRb.start_service('druby://localhost:0', DRbEx.new)
+  DRb.start_service('druby://127.0.0.1:0', DRbEx.new)
   es = DRb::ExtServ.new(ARGV.shift, ARGV.shift)
   DRb.thread.join
 end

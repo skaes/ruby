@@ -22,7 +22,7 @@ class DRbService
   %w(ut_drb.rb ut_array.rb ut_port.rb ut_large.rb ut_safe1.rb ut_eval.rb).each do |nm|
     add_service_command(nm)
   end
-  @server = @@server = DRb::DRbServer.new('druby://localhost:0', @@manager, {})
+  @server = @@server = DRb::DRbServer.new('druby://127.0.0.1:0', @@manager, {})
   @@manager.uri = @@server.uri
   def self.manager
     @@manager
@@ -79,16 +79,16 @@ module DRbCore
   end
 
   def test_00_DRbObject
-    ro = DRbObject.new(nil, 'druby://localhost:12345')
-    assert_equal('druby://localhost:12345', ro.__drburi)
+    ro = DRbObject.new(nil, 'druby://127.0.0.1:12345')
+    assert_equal('druby://127.0.0.1:12345', ro.__drburi)
     assert_equal(nil, ro.__drbref)
 
-    ro = DRbObject.new_with_uri('druby://localhost:12345')
-    assert_equal('druby://localhost:12345', ro.__drburi)
+    ro = DRbObject.new_with_uri('druby://127.0.0.1:12345')
+    assert_equal('druby://127.0.0.1:12345', ro.__drburi)
     assert_equal(nil, ro.__drbref)
 
-    ro = DRbObject.new_with_uri('druby://localhost:12345?foobar')
-    assert_equal('druby://localhost:12345', ro.__drburi)
+    ro = DRbObject.new_with_uri('druby://127.0.0.1:12345?foobar')
+    assert_equal('druby://127.0.0.1:12345', ro.__drburi)
     assert_equal(DRb::DRbURIOption.new('foobar'), ro.__drbref)
   end
 
