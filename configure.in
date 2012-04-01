@@ -1595,6 +1595,14 @@ fi
 LDFLAGS="-L. $LDFLAGS"
 AC_SUBST(ARCHFILE)
 
+dnl enable gc debugging
+AC_ARG_ENABLE(gcdebug,
+       [  --enable-gcdebug	   build garbage collector with debugging enabled. ],
+       [enable_gcdebug=$enableval])
+if test "$enable_gcdebug" = 'yes'; then
+      AC_DEFINE(GC_DEBUG, 1)
+fi
+
 dnl build rdoc index if requested
 RDOCTARGET=""
 AC_ARG_ENABLE(install-doc,
