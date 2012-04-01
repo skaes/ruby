@@ -270,6 +270,8 @@ void rb_gc_call_finalizer_at_exit _((void));
 VALUE rb_gc_enable _((void));
 VALUE rb_gc_disable _((void));
 VALUE rb_gc_start _((void));
+void rb_gc_before_fork _((void));
+void rb_gc_after_fork _((void));
 /* hash.c */
 void st_foreach_safe _((struct st_table *, int (*)(ANYARGS), unsigned long));
 void rb_hash_foreach _((VALUE, int (*)(ANYARGS), VALUE));

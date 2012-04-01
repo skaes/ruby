@@ -223,6 +223,8 @@ static int dont_gc;
 static int gc_statistics = 0;
 static GC_TIME_TYPE gc_time = 0;
 static int gc_collections = 0;
+static int verbose_gc_stats = Qfalse;
+static FILE* gc_data_file = NULL;
 static int during_gc;
 static int need_call_final = 0;
 static st_table *finalizer_table = 0;
@@ -368,8 +370,147 @@ rb_gc_time()
 #endif
 }
 
-
 VALUE rb_mGC;
+
+/*
+ *  call-seq:
+ *     GC.enable_trace    => true or false
+ *
+ *  Enables garbage collection tracing, returning <code>true</code> if garbage
+ *  collection tracing was already enabled.
+ *
+ *     GC.enable_trace   #=> false or true
+ *     GC.enable_trace   #=> true
+ *
+ */
+
+VALUE
+rb_gc_enable_trace()
+{
+    int old = verbose_gc_stats;
+    verbose_gc_stats = Qtrue;
+    return old;
+}
+
+/*
+ *  call-seq:
+ *     GC.disable_trace    => true or false
+ *
+ *  Disables garbage collection tracing, returning <code>true</code> if garbage
+ *  collection tracing was already disabled.
+ *
+ *     GC.disable_trace   #=> false or true
+ *     GC.disable_trace   #=> true
+ *
+ */
+
+VALUE
+rb_gc_disable_trace()
+{
+    int old = verbose_gc_stats;
+    verbose_gc_stats = Qfalse;
+    return old;
+}
+
+char* GC_LOGFILE_IVAR = "@gc_logfile_name";
+
+/*
+ *  call-seq:
+ *     GC.log_file(filename=nil, mode="w")    => boolean
+ *
+ *  Changes the GC data log file. Closes the currently open logfile.
+ *  Returns true if the file was successfully opened for
+ *  writing. Returns false if the file could not be opened for
+ *  writing. Returns the name of the current logfile (or nil) if no
+ *  parameter is given. Restores logging to stderr when given nil as
+ *  an argument.
+ *
+ *     GC.log_file                  #=> nil
+ *     GC.log_file "/tmp/gc.log"    #=> true
+ *     GC.log_file                  #=> "/tmp/gc.log"
+ *     GC.log_file nil              #=> true
+ *
+ */
+
+VALUE
+rb_gc_log_file(int argc, VALUE *argv, VALUE self)
+{
+    VALUE filename = Qnil;
+    VALUE mode_str = Qnil;
+    FILE* f = NULL;
+    char* mode = "w";
+
+    VALUE current_logfile_name = rb_iv_get(rb_mGC, GC_LOGFILE_IVAR);
+
+    if (argc==0)
+        return current_logfile_name;
+
+    rb_scan_args(argc, argv, "02", &filename, &mode_str);
+
+    if (filename == Qnil) {
+        /* close current logfile and reset logfile to stderr */
+        if (gc_data_file != stderr) {
+            fclose(gc_data_file);
+            gc_data_file = stderr;
+            rb_iv_set(rb_mGC, GC_LOGFILE_IVAR, Qnil);
+        }
+        return Qtrue;
+    }
+
+    /* we have a real logfile name */
+    filename = StringValue(filename);
+
+    if (rb_equal(current_logfile_name, filename) == Qtrue) {
+        /* do nothing if we get the file name we're already logging to */
+        return Qtrue;
+    }
+
+    /* get mode for file opening */
+    if (mode_str != Qnil)
+    {
+      mode = RSTRING(StringValue(mode_str))->ptr;
+    }
+
+    /* try to open file in given mode */
+    if (f = fopen(RSTRING(filename)->ptr, mode)) {
+        if (gc_data_file != stderr) {
+            fclose(gc_data_file);
+        }
+        gc_data_file = f;
+        rb_iv_set(rb_mGC, GC_LOGFILE_IVAR, filename);
+    } else {
+        return Qfalse;
+    }
+    return Qtrue;
+}
+
+
+/*
+ * Called from process.c before a fork. Flushes the gc log file to
+ * avoid writing the buffered output twice (once in the parent, and
+ * once in the child).
+ */
+void
+rb_gc_before_fork()
+{
+  /* flush gc log file */
+  fflush(gc_data_file);
+}
+
+/*
+ * Called from process.c after a fork in the child process. Turns off
+ * logging, disables GC stats and resets all gc counters and timing
+ * information.
+ */
+void
+rb_gc_after_fork()
+{
+    rb_gc_disable_stats();
+    rb_gc_clear_stats();
+    rb_gc_disable_trace();
+    gc_data_file = stderr;
+    rb_iv_set(rb_mGC, GC_LOGFILE_IVAR, Qnil);
+}
 
 static struct gc_list {
     VALUE *varptr;
@@ -477,10 +618,6 @@ static double heap_slots_growth_factor = 1.8;
 
 static long initial_malloc_limit = GC_MALLOC_LIMIT;
 
-static int verbose_gc_stats = Qfalse;
-
-static FILE* gc_data_file = NULL;
-
 static RVALUE *himem, *lomem;
 
 static void set_gc_parameters()
@@ -496,6 +633,8 @@ static void set_gc_parameters()
         if (gc_stats_i > 0) {
             verbose_gc_stats = Qtrue;
         }
+        /* child processes should not inherit RUBY_GC_STATS */
+        unsetenv("RUBY_GC_STATS");
     }
 
     gc_heap_file_ptr = getenv("RUBY_GC_DATA_FILE");
@@ -508,6 +647,8 @@ static void set_gc_parameters()
             fprintf(stderr,
                     "can't open gc log file %s for writing, using default\n", gc_heap_file_ptr);
         }
+        /* child processes should not inherit RUBY_GC_DATA_FILE to avoid clobbering */
+        unsetenv("RUBY_GC_DATA_FILE");
     }
 
     min_slots_ptr = getenv("RUBY_HEAP_MIN_SLOTS");
@@ -2619,6 +2760,9 @@ Init_GC()
     rb_define_singleton_method(rb_mGC, "dump_file_and_line_info", rb_gc_dump_file_and_line_info, -1);
 #endif
     rb_define_singleton_method(rb_mGC, "log", rb_gc_log, 1);
+    rb_define_singleton_method(rb_mGC, "log_file", rb_gc_log_file, -1);
+    rb_define_singleton_method(rb_mGC, "enable_trace", rb_gc_enable_trace, 0);
+    rb_define_singleton_method(rb_mGC, "disable_trace", rb_gc_disable_trace, 0);
 
     rb_mObSpace = rb_define_module("ObjectSpace");
     rb_define_module_function(rb_mObSpace, "each_object", os_each_obj, -1);
