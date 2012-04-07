@@ -2453,6 +2453,10 @@ if test "$EXEEXT" = .exe; then
     AC_SUBST(EXECUTABLE_EXTS)
 fi
 
+dnl enable gc debugging
+AC_ARG_ENABLE(gcdebug,
+       AS_HELP_STRING([--enable-gcdebug], [build garbage collector with debugging enabled]),
+       [AC_DEFINE(GC_DEBUG,1)])
 dnl }
 dnl build section {
 
