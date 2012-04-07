@@ -431,6 +431,8 @@ void rb_gc_call_finalizer_at_exit(void);
 VALUE rb_gc_enable(void);
 VALUE rb_gc_disable(void);
 VALUE rb_gc_start(void);
+void rb_gc_before_fork _((void));
+void rb_gc_after_fork _((void));
 #define Init_stack(addr) ruby_init_stack(addr)
 void rb_gc_set_params(void);
 /* hash.c */

@@ -2782,9 +2782,11 @@ rb_f_fork(VALUE obj)
     rb_pid_t pid;
 
     rb_secure(2);
+    rb_gc_before_fork();
 
     switch (pid = rb_fork(0, 0, 0, Qnil)) {
       case 0:
+        rb_gc_after_fork();
 	rb_thread_atfork();
 	if (rb_block_given_p()) {
 	    int status;
