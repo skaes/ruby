@@ -76,6 +76,7 @@ class TestEtc < Test::Unit::TestCase
   end
 
   def test_getgrgid
+    skip "Broken Etc.getgrgid on this machine" if ENV['RUBY_TEST_OPTIONS_BROKEN_GETGRGID']=='1'
     # group database is not unique on GID, and which entry will be
     # returned by getgrgid() is not specified.
     groups = Hash.new {[]}
@@ -92,6 +93,7 @@ class TestEtc < Test::Unit::TestCase
   end
 
   def test_getgrnam
+    skip "Broken Etc.getgrnam on this machine" if ENV['RUBY_TEST_OPTIONS_BROKEN_GETGRNAM']=='1'
     groups = {}
     Etc.group do |s|
       groups[s.name] ||= s unless /\A\+/ =~ s.name

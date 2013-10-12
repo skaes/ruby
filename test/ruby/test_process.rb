@@ -1554,6 +1554,7 @@ class TestProcess < Test::Unit::TestCase
 
   def test_execopts_gid
     skip "Process.groups not implemented on Windows platform" if windows?
+    skip "Broken Etc.getgrgid on this machine" if ENV['RUBY_TEST_OPTIONS_BROKEN_GETGRGID']=='1'
     feature6975 = '[ruby-core:47414]'
 
     [30000, *Process.groups.map {|g| g = Etc.getgrgid(g); [g.name, g.gid]}].each do |group, gid|

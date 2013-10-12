@@ -3,11 +3,15 @@ require "stringio"
 require "test/unit"
 
 class TestWEBrickHTTPRequest < Test::Unit::TestCase
+  def webrick_config_http
+    WEBrick::Config::HTTP.merge(:ServerName => "localhost")
+  end
+
   def test_simple_request
     msg = <<-_end_of_message_
 GET /
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg))
     assert(req.meta_vars) # fails if @header was not initialized and iteration is attempted on the nil reference
   end
@@ -17,12 +21,12 @@ GET /
       GET /
       foobar    # HTTP/0.9 request don't have header nor entity body.
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal("GET", req.request_method)
     assert_equal("/", req.unparsed_uri)
     assert_equal(WEBrick::HTTPVersion.new("0.9"), req.http_version)
-    assert_equal(WEBrick::Config::HTTP[:ServerName], req.host)
+    assert_equal(webrick_config_http[:ServerName], req.host)
     assert_equal(80, req.port)
     assert_equal(false, req.keep_alive?)
     assert_equal(nil, req.body)
@@ -34,12 +38,12 @@ GET /
       GET / HTTP/1.0
 
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal("GET", req.request_method)
     assert_equal("/", req.unparsed_uri)
     assert_equal(WEBrick::HTTPVersion.new("1.0"), req.http_version)
-    assert_equal(WEBrick::Config::HTTP[:ServerName], req.host)
+    assert_equal(webrick_config_http[:ServerName], req.host)
     assert_equal(80, req.port)
     assert_equal(false, req.keep_alive?)
     assert_equal(nil, req.body)
@@ -51,14 +55,14 @@ GET /
       GET /path HTTP/1.1
 
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal("GET", req.request_method)
     assert_equal("/path", req.unparsed_uri)
     assert_equal("", req.script_name)
     assert_equal("/path", req.path_info)
     assert_equal(WEBrick::HTTPVersion.new("1.1"), req.http_version)
-    assert_equal(WEBrick::Config::HTTP[:ServerName], req.host)
+    assert_equal(webrick_config_http[:ServerName], req.host)
     assert_equal(80, req.port)
     assert_equal(true, req.keep_alive?)
     assert_equal(nil, req.body)
@@ -69,7 +73,7 @@ GET /
     msg = <<-_end_of_message_
       GET /#{"a"*2084} HTTP/1.1
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     assert_raise(WEBrick::HTTPStatus::RequestURITooLarge){
       req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     }
@@ -122,7 +126,7 @@ GET /
 
       hogehoge
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal("POST", req.request_method)
     assert_equal("/foo/baz", req.path)
@@ -139,7 +143,7 @@ GET /
       Host: test.ruby-lang.org
 
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal(URI.parse("http://test.ruby-lang.org/path"), req.request_uri)
     assert_equal("test.ruby-lang.org", req.host)
@@ -150,7 +154,7 @@ GET /
       Host: 192.168.1.1
 
     _end_of_message_
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg.gsub(/^ {6}/, "")))
     assert_equal(URI.parse("http://192.168.1.1/path"), req.request_uri)
     assert_equal("192.168.1.1", req.host)
@@ -343,7 +347,7 @@ GET /
 
     _end_of_message_
     msg.gsub!(/^ {6}/, "")
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg))
     assert req['expect']
     l = msg.size
@@ -359,7 +363,7 @@ GET /
 
     _end_of_message_
     msg.gsub!(/^ {6}/, "")
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(StringIO.new(msg))
     assert !req['expect']
     l = msg.size

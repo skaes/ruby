@@ -21,6 +21,10 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
     end
   end
 
+  def webrick_config_http
+    WEBrick::Config::HTTP.merge(:ServerName => "localhost")
+  end
+
   def make_range_request(range_spec)
     msg = <<-END_OF_REQUEST
       GET / HTTP/1.0
@@ -31,9 +35,9 @@ class WEBrick::TestFileHandler < Test::Unit::TestCase
   end
 
   def make_range_response(file, range_spec)
-    req = WEBrick::HTTPRequest.new(WEBrick::Config::HTTP)
+    req = WEBrick::HTTPRequest.new(webrick_config_http)
     req.parse(make_range_request(range_spec))
-    res = WEBrick::HTTPResponse.new(WEBrick::Config::HTTP)
+    res = WEBrick::HTTPResponse.new(webrick_config_http)
     size = File.size(file)
     handler = default_file_handler(file)
     handler.make_partial_content(req, res, file, size)
