@@ -61,7 +61,7 @@ jobs:
       run: sudo rm /usr/lib/ruby/vendor_ruby/rubygems/defaults/operating_system.rb
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2.1.33
+      uses: github/codeql-action/init@a669cc5936cc5e1b6a362ec1ff9e410dc570d190 # v2.1.36
       with:
         config-file: ./.github/codeql/codeql-config.yml
 
@@ -69,7 +69,7 @@ jobs:
       run: echo "GNUMAKEFLAGS=-j$((1 + $(nproc --all)))" >> $GITHUB_ENV
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2.1.33
+      uses: github/codeql-action/autobuild@a669cc5936cc5e1b6a362ec1ff9e410dc570d190 # v2.1.36
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2.1.33
+      uses: github/codeql-action/analyze@a669cc5936cc5e1b6a362ec1ff9e410dc570d190 # v2.1.36
