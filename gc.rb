@@ -320,6 +320,92 @@ module GC
       ULL2NUM(rb_objspace.profile.marking_time_ns + rb_objspace.profile.sweeping_time_ns)
     }
   end
+
+  # call-seq:
+  #    GC.enable_stats	  => true or false
+  #
+  # Enables garbage collection statistics, returning <code>true</code> if garbage
+  # collection statistics was already enabled.
+  #
+  #    GC.enable_stats	 #=> false or true
+  #    GC.enable_stats	 #=> true
+  def self.enable_stats
+    Primitive.gc_enable_stats
+  end
+
+  #   call-seq:
+  #    GC.disable_stats	   => true or false
+  #
+  # Disables garbage collection statistics, returning <code>true</code> if garbage
+  # collection statistics was already disabled.
+  #
+  #    GC.disable_stats	  #=> false or true
+  #    GC.disable_stats	  #=> true
+  def self.disable_stats
+    Primitive.gc_disable_stats
+  end
+
+  # call-seq:
+  #    GC.stats_enabled?    => true or false
+  #
+  # Check whether GC stats have been enabled.
+  #
+  #    GC.stats_enabled?   #=> false or true
+  def self.stats_enabled?
+    Primitive.gc_stats_enabled
+  end
+
+  #   call-seq:
+  #    GC.time	  => Integer
+  #
+  # Returns the time spent during garbage collection while GC statistics collection
+  # was enabled (in micro seconds).
+  #
+  #    GC.time	  #=> 20000
+  def self.time
+    Primitive.gc_time
+  end
+
+  #  call-seq:
+  #	GC.heap_slots	=> Integer
+  #
+  #  Returns the number of heap slots available for object allocations.
+  #
+  #	GC.heap_slots	#=> 10000
+  def self.heap_slots
+    Primitive.gc_heap_slots
+  end
+
+  # call-seq:
+  #    GC.heap_slots_live_after_last_gc	   => Integer
+  #
+  # Returns the number of heap slots which were live after the last garbage collection.
+  #
+  #    GC.heap_slots_live_after_last_gc	   #=> 231223
+  def self.heap_slots_live_after_last_gc
+    Primitive.gc_heap_slots_live_after_last_gc
+  end
+
+  #   call-seq:
+  #	 GC.total_mallocs	   => Integer
+  #
+  #   Returns the number malloc calls. Might wrap around.
+  #
+  #	 GC.total_mallocs	   #=> 324234323246
+  def self.total_mallocs
+    Primitive.gc_total_mallocs
+  end
+
+  #   call-seq:
+  #	 GC.total_malloced_bytes	   => Integer
+  #
+  #   Returns the number of bytes allocated. Might wrap around.
+  #
+  #	 GC.total_malloced_bytes	   #=> 354656256432446
+  def self.total_malloced_bytes
+    Primitive.gc_total_malloced_bytes
+  end
+
 end
 
 module ObjectSpace

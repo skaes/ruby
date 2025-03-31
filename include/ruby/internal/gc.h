@@ -431,6 +431,15 @@ void rb_gc_unregister_address(VALUE *valptr);
  */
 void rb_gc_register_mark_object(VALUE object);
 
+VALUE rb_gc_enable_stats(void);
+VALUE rb_gc_disable_stats(void);
+VALUE rb_gc_stats_enabled(void);
+double rb_gc_total_time(void);
+VALUE rb_gc_heap_slots(void);
+VALUE rb_gc_heap_slots_live_after_last_gc(void);
+size_t rb_gc_total_mallocs(void);
+size_t rb_gc_total_malloced_bytes(void);
+
 RBIMPL_SYMBOL_EXPORT_END()
 
 /**
